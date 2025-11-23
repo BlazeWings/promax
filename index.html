@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI智能英语学习中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f0ff 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100px); }
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 14px 28px;
+            background: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+        }
+        
+        .nav-btn:hover {
+            background: #3a0ca3;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .nav-btn.active {
+            background: #f72585;
+            box-shadow: 0 4px 8px rgba(247, 37, 133, 0.3);
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(224, 231, 255, 0.5);
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 新增：分组进度指示器 */
+        .group-progress {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .progress-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #e0e7ff;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .progress-circle.completed {
+            background: #06d6a0;
+            border-color: #06d6a0;
+        }
+        
+        .progress-circle.current {
+            background: #4361ee;
+            border-color: #4361ee;
+        }
+        
+        /* 新增：语音控制面板 */
+        .voice-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .voice-speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .speed-slider {
+            width: 150px;
+        }
+        
+        /* 新增：小说展示区 */
+        .story-container {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid #e0e7ff;
+            line-height: 1.8;
+        }
+        
+        .highlight-word {
+            background: #ffd166;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .highlight-word:hover {
+            background: #ffb703;
+        }
+        
+        /* 新增：选择题样式 */
+        .quiz-container {
+            margin-top: 20px;
+        }
+        
+        .quiz-option {
+            background: white;
+            padding: 18px;
+            margin: 12px 0;
+            border-radius: 10px;
+            border: 2px solid #e0e7ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option:hover {
+            border-color: #4361ee;
+            background: #f8f9ff;
+        }
+        
+        .quiz-option.selected {
+            border-color: #4361ee;
+            background: #edf2ff;
+        }
+        
+        .quiz-option.correct {
+            border-color: #06d6a0;
+            background: #e6f9f3;
+        }
+        
+        .quiz-option.wrong {
+            border-color: #ef476f;
+            background: #ffe5e5;
+        }
+        
+        /* 新增：CSV导入 */
+        .csv-upload {
+            margin: 20px 0;
+        }
+        
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4361ee;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-btn:hover {
+            background: #3a0ca3;
+        }
+        
+        /* 新增：图表容器 */
+        .chart-container {
+            height: 300px;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        /* 设置面板 */
+        .settings-panel {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid #e0e7ff;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e7ff;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .word-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #edf2ff 100%);
+            padding: 35px 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid #e0e7ff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        
+        .word-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .word {
+            font-size: 52px;
+            font-weight: bold;
+            color: #3a0ca3;
+            font-family: 'Georgia', serif;
+            letter-spacing: -0.5px;
+        }
+        
+        .pronunciation {
+            color: #4361ee;
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .meaning {
+            font-size: 24px;
+            color: #4a5568;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin: 15px 5px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .difficulty-easy { background: #06d6a0; }
+        .difficulty-medium { background: #ffd166; color: #333; }
+        .difficulty-hard { background: #ef476f; }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            background: #e0e7ff;
+            color: #3a0ca3;
+            margin: 0 5px;
+            font-weight: 500;
+        }
+        
+        .example {
+            margin-top: 25px;
+            padding: 18px;
+            background: #edf2ff;
+            border-radius: 10px;
+            font-style: italic;
+            text-align: left;
+            border-left: 4px solid #4361ee;
+            font-size: 18px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-primary {
+            background: #4361ee;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3a0ca3;
+        }
+        
+        .btn-success {
+            background: #06d6a0;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #048a81;
+        }
+        
+        .btn-warning {
+            background: #ffd166;
+            color: #333;
+        }
+        
+        .btn-warning:hover {
+            background: #ffb703;
+        }
+        
+        .btn-speak {
+            background: #7209b7;
+            color: white;
+            padding: 10px 18px;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+        
+        .btn-speak:hover {
+            background: #5a0892;
+        }
+        
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            background: #f8f9ff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 14px 20px;
+            border-radius: 18px;
+            max-width: 75%;
+            word-wrap: break-word;
+            animation: messageFade 0.3s ease;
+        }
+        
+        @keyframes messageFade {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .message.user {
+            background: #4361ee;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 6px;
+        }
+        
+        .message.ai {
+            background: #e0e7ff;
+            color: #3a0ca3;
+            border-bottom-left-radius: 6px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        input[type="text"], input[type="file"], select {
+            flex: 1;
+            padding: 16px;
+            border: 1px solid #e0e7ff;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f8f9ff;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+        
+        .progress-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e7ff;
+            transition: all 0.2s;
+        }
+        
+        .progress-item:hover {
+            transform: translateX(5px);
+            border-color: #4361ee;
+        }
+        
+        .progress-item.due {
+            border-color: #f72585;
+            background: #fff0f5;
+            box-shadow: 0 4px 8px rgba(247, 37, 133, 0.1);
+        }
+        
+        .review-notification {
+            background: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 6px 12px rgba(247, 37, 133, 0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+            100% { transform: scale(1); }
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .dictionary-result, .ai-word-suggestion {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f0ff 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid #4361ee;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 25px;
+            color: #4361ee;
+            font-weight: 500;
+            font-size: 18px;
+        }
+        
+        .error {
+            background: #ffe5e5;
+            color: #d32f2f;
+            padding: 18px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+            border-left: 4px solid #d32f2f;
+            font-weight: 500;
+        }
+        
+        .srs-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .srs-btn {
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #e0e7ff;
+            color: #3a0ca3;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .srs-btn:hover {
+            background: #4361ee;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #06d6a0;
+            color: white;
+            padding: 18px 25px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.4s ease;
+            font-weight: 600;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .word-grid-item {
+            background: #f8f9ff;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #e0e7ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .word-grid-item:hover {
+            transform: translateY(-5px);
+            border-color: #4361ee;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .word-grid-item.selected {
+            background: #edf2ff;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .daily-words-banner {
+            background: linear-gradient(135deg, #06d6a0 0%, #048a81 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(6, 214, 160, 0.2);
+        }
+        
+        .daily-words-banner h3 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        /* Tab切换样式 */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e7ff;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-btn.active {
+            color: #4361ee;
+            border-bottom-color: #4361ee;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎯 AI智能英语学习中心</h1>
+        <p style="margin-top: 10px;">AI推送 · 智能复习 · 对话练习</p>
+    </header>
+
+    <div class="container">
+        <nav>
+            <button class="nav-btn active" onclick="showSection('daily', event)">分组学习</button>
+            <button class="nav-btn" onclick="showSection('ai-assist', event)">AI辅助</button>
+            <button class="nav-btn" onclick="showSection('learning', event)">单词库</button>
+            <button class="nav-btn" onclick="showSection('review', event)">智能复习</button>
+            <button class="nav-btn" onclick="showSection('progress', event)">学习进度</button>
+        </nav>
+
+        <!-- 分组学习页面 -->
+        <div id="daily" class="section active">
+            <div class="daily-words-banner">
+                <h3>📅 今日AI推荐单词组</h3>
+                <p id="daily-words-count">正在生成今日学习计划...</p>
+            </div>
+            
+            <!-- 新增：分组进度指示器 -->
+            <div class="group-progress" id="group-progress">
+                <!-- 动态生成10个圆圈 -->
+            </div>
+            
+            <div class="ai-word-suggestion" id="ai-word-suggestion"></div>
+            
+            <div class="loading" id="daily-loading">AI正在分析你的学习进度，为你定制今日单词...</div>
+            <div class="error" id="daily-error"></div>
+            
+            <div class="word-grid" id="daily-words-grid"></div>
+            
+            <!-- 新增：语音控制面板 -->
+            <div class="voice-controls">
+                <div class="voice-speed-control">
+                    <label>语速：</label>
+                    <input type="range" class="speed-slider" id="voice-speed" min="0.5" max="2.0" step="0.1" value="0.85">
+                    <span id="speed-display">0.85x</span>
+                </div>
+                <label>
+                    <input type="radio" name="voice-accent" value="US" checked> 美音
+                </label>
+                <label>
+                    <input type="radio" name="voice-accent" value="UK"> 英音
+                </label>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-success" onclick="markGroupAsLearned()">✓ 完成本组</button>
+                <button class="btn-warning" onclick="resetCurrentGroup()">🔄 重置本组</button>
+                <button class="btn-primary" onclick="generateDailyWords()">🎲 重新生成</button>
+            </div>
+        </div>
+
+        <!-- 新增：AI辅助页面 -->
+        <div id="ai-assist" class="section">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('ai-chat', event)">AI对话</button>
+                <button class="tab-btn" onclick="switchTab('ai-story', event)">AI小说</button>
+            </div>
+            
+            <!-- AI对话 -->
+            <div id="ai-chat" class="tab-content active">
+                <div class="chat-container" id="chat-container">
+                    <div class="message ai">
+                        你好！我是你的AI英语对话伙伴。请告诉我你的英语水平（初级/中级/高级），我会根据你的已学单词进行对话练习！
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="chat-input" placeholder="输入你的消息..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="btn-primary" onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+            
+            <!-- AI小说 -->
+            <div id="ai-story" class="tab-content">
+                <div class="loading" id="story-loading">AI正在生成包含今日所学单词的趣味故事...</div>
+                <div class="error" id="story-error"></div>
+                <div class="story-container" id="story-container" style="display: none;">
+                    <h3>📖 AI生成故事</h3>
+                    <p>点击下方高亮单词可查看释义和发音</p>
+                </div>
+                <button class="btn-primary" onclick="generateStory()" style="margin-top: 15px;">
+                    ✨ 生成新故事
+                </button>
+            </div>
+        </div>
+
+        <!-- 单词库页面 -->
+        <div id="learning" class="section">
+            <div class="filter-group">
+                <label>分类筛选：</label>
+                <select id="category-filter" onchange="filterByCategory()">
+                    <option value="all">全部分类</option>
+                    <option value="daily">日常用语</option>
+                    <option value="business">商务英语</option>
+                    <option value="travel">旅游英语</option>
+                    <option value="academic">学术英语</option>
+                    <option value="technology">科技英语</option>
+                </select>
+                
+                <label>难度筛选：</label>
+                <select id="difficulty-filter" onchange="filterByDifficulty()">
+                    <option value="all">全部难度</option>
+                    <option value="easy">初级</option>
+                    <option value="medium">中级</option>
+                    <option value="hard">高级</option>
+                </select>
+                
+                <!-- 新增：CSV导入 -->
+                <div class="csv-upload">
+                    <label class="upload-btn">
+                        📤 导入CSV
+                        <input type="file" id="csv-file" accept=".csv" onchange="importCSV(event)" style="display: none;">
+                    </label>
+                </div>
+            </div>
+            
+            <div class="word-card">
+                <div class="word-header">
+                    <div class="word" id="current-word">Welcome</div>
+                </div>
+                <div class="pronunciation" id="pronunciation">/ˈwelkəm/</div>
+                <div class="meaning" id="meaning">欢迎</div>
+                <div id="badges-container">
+                    <span class="difficulty-badge difficulty-easy" id="difficulty-badge">初级</span>
+                    <span class="category-badge" id="category-badge">日常</span>
+                </div>
+                <div class="example" id="example">
+                    <strong>例句：</strong>Welcome to our AI English Learning Center!
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-success" onclick="markAsLearned()">✓ 标记已学会</button>
+                <button class="btn-warning" onclick="needMorePractice()">🔄 需加强练习</button>
+                <button class="btn-primary" onclick="nextWord()">下一个 →</button>
+            </div>
+            
+            <button class="btn-primary" onclick="queryDictionary()" style="margin-top: 15px; width: 100%;">
+                🔍 AI词典查询详细解释
+            </button>
+            
+            <div class="dictionary-result" id="dictionary-result"></div>
+            
+            <div class="loading" id="learning-loading">正在加载...</div>
+            <div class="error" id="learning-error"></div>
+        </div>
+
+        <!-- 智能复习页面 -->
+        <div id="review" class="section">
+            <div class="review-notification" id="review-notification" style="display: none;">
+                <h3>🎯 今日有 <span id="due-words-count">0</span> 个单词需要复习！</h3>
+                <p>根据SM-2算法，现在复习效果最佳！</p>
+            </div>
+            
+            <!-- 新增：复习模式 -->
+            <div id="review-mode-container" style="display: none;">
+                <div class="word-card" id="review-card">
+                    <div class="word" id="review-word"></div>
+                    <div class="pronunciation" id="review-pronunciation"></div>
+                    <div class="quiz-container" id="quiz-container">
+                        <!-- 动态生成4个选项 -->
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="submitQuiz()">提交答案</button>
+                    <button class="btn-warning" onclick="hintForQuiz()">💡 提示</button>
+                </div>
+            </div>
+            
+            <!-- 复习列表 -->
+            <h3>待复习单词</h3>
+            <div id="review-words-list"></div>
+            
+            <div class="loading" id="review-loading">加载复习列表...</div>
+            <div class="error" id="review-error"></div>
+        </div>
+
+        <!-- 学习进度页面 -->
+        <div id="progress" class="section">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-learned">0</div>
+                    <div>已学单词</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="today-learned">0</div>
+                    <div>今日学习</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="due-today">0</div>
+                    <div>今日待复习</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="streak-days">0</div>
+                    <div>连续天数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="mastered-words">0</div>
+                    <div>已掌握</div>
+                </div>
+            </div>
+            
+            <!-- 新增：图表容器 -->
+            <div class="chart-container">
+                <canvas id="progress-chart"></canvas>
+            </div>
+            
+            <!-- 新增：设置面板 -->
+            <div class="settings-panel">
+                <h4>⚙️ 学习设置</h4>
+                <div class="setting-item">
+                    <label>每日学习目标：</label>
+                    <select id="daily-goal" onchange="updateDailyGoal()">
+                        <option value="10">10个单词</option>
+                        <option value="20" selected>20个单词</option>
+                        <option value="30">30个单词</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>复习提醒时间：</label>
+                    <input type="time" id="reminder-time" value="20:00" onchange="updateReminderTime()">
+                </div>
+                <div class="setting-item">
+                    <label>智能语音：</label>
+                    <input type="checkbox" id="auto-speak" checked onchange="toggleAutoSpeak()">
+                    <span>自动朗读新单词</span>
+                </div>
+            </div>
+            
+            <h3>学习详情</h3>
+            <div class="filter-group">
+                <label>查看分类：</label>
+                <select id="progress-category-filter" onchange="updateProgressDisplay()">
+                    <option value="all">全部</option>
+                    <option value="daily">日常</option>
+                    <option value="business">商务</option>
+                    <option value="travel">旅游</option>
+                    <option value="academic">学术</option>
+                    <option value="technology">科技</option>
+                </select>
+            </div>
+            
+            <div id="learned-words-list"></div>
+            
+            <button class="btn-primary" onclick="exportData()" style="margin-top: 20px;">
+                📥 导出学习数据
+            </button>
+            <button class="btn-primary" onclick="clearData()" style="margin-top: 20px; margin-left: 10px; background: #ef476f;">
+                🗑️ 清空数据
+            </button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+    
+    <!-- 新增：Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
